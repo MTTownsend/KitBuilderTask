@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "Gqkgln6o6sQClTU60YJRUoaUdBzjMw3S3+63RlTIC7vMeUs7u9O0adRmkHN+zf7c9XGkRVRJWBpf0O10y5RQGg==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\mttow\\KitBuilderTask\\KitBuilderTask.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\mttow\\.nuget\\packages\\system.commandline\\2.0.0-beta4.22272.1\\system.commandline.2.0.0-beta4.22272.1.nupkg.sha512"
+  ],
+  "logs": []
+}
