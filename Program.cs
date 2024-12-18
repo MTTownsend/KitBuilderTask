@@ -1,23 +1,17 @@
-﻿using System.CommandLine;
-using System.CommandLine.Invocation;
+﻿namespace KitBuilderTask;
 
+/// <summary>
+/// Main entry point into the application.
+/// </summary>
 class Program
 {
     static void Main(string[] args)
     {
-        var argument = new Argument<string>(name: "args");
+        ICliParser cliParser = new RoBoParser();
+        IReportGenerator reportGenerator = new RoBoReportGenerator();
 
-        var rootCommand = new RootCommand();
-
-        rootCommand.AddArgument(argument);
-
-        rootCommand.SetHandler((args) =>
-        {
-            RoBoFriend roboFriend = new RoBoFriend();
-            roboFriend.ExecuteCommands(args);
-        }, argument);
-
-        rootCommand.Invoke(args);
+        ICommandExecuter demo = new RoBoFriend(cliParser, reportGenerator);
+        demo.ExecuteCommands();
     }
 }
 
