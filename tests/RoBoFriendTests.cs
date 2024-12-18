@@ -63,6 +63,7 @@ public class RoBoFriendTests
         new object[] { "Test rotate LEFT from West", new string[] { "place 0 0 west", "left", "report", "end" }, ( 0, 0, Direction.South ), true },
         new object[] { "Test multiple commands", new string[] { "place 3 3 north", "move", "left", "move", "left", "move", "move", "report", "end" }, ( 2, 2, Direction.South ), true },
         new object[] { "Test multiple PLACE commands", new string[] { "place 0 0 north", "move", "right", "move", "place 0 0 west", "report", "end" }, ( 0, 0, Direction.West ), true },
+        new object[] { "Test Invalid commands ignored", new string[] { "place 0 0 north", "new_command", "moves", "up", "report", "end" }, ( 0, 0, Direction.North ), true },
     };
 
     /// <summary>
