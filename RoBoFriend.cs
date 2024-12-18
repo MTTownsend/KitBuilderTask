@@ -40,13 +40,12 @@ class RoBoFriend : ICommandExecuter
         {
             Console.WriteLine("Please enter a command to continue\n");
 
-            string[] argsArray = cliParser.ParseArgs();
+            string[] argsArray = this.cliParser.ParseArgs();
 
             if (argsArray.Length > 0)
             {
                 foreach (string arg in argsArray)
                 {
-
                     if (arg.StartsWith("place"))
                     {
                         Place(arg);
@@ -186,7 +185,7 @@ class RoBoFriend : ICommandExecuter
     {
         if (isPosXSet && isPosYSet)
         {
-            reportGenerator.GenerateReport(this.posX, this.posY, (Direction)currentDirection);
+            this.reportGenerator.GenerateReport(this.posX, this.posY, (Direction)currentDirection);
         }
     }
 }
