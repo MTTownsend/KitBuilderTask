@@ -1,121 +1,152 @@
-class RoBoFriend
+namespace KitBuilderTask;
+
+/// <summary>
+/// Represents a component capable of moving within table boundaries.
+/// </summary>
+class RoBoFriend : ICommandExecuter
 {
     private int posX;
 
     private int posY;
 
-    private int? currentDirection;
+    private int speed = 1;
 
-    private enum direction
+    private int currentDirection;
+
+    private bool isPosXSet = false;
+
+    private bool isPosYSet = false;
+
+    private ICliParser cliParser;
+
+    private IReportGenerator reportGenerator;
+
+    /// <summary>
+    /// <c>RoBoFriend</c> class constructor.
+    /// </summary>
+    /// <param name="cliParser">Parser component used to parse the CLI commands</param>
+    /// <param name="reportGenerator">Report generator component used to write the report to the terminal</param>
+    public RoBoFriend(ICliParser cliParser, IReportGenerator reportGenerator)
     {
-        north, east, south, west
+        this.cliParser = cliParser;
+        this.reportGenerator = reportGenerator;
     }
 
-    private bool posXSet = false;
-
-    private bool posYSet = false;
-
-    private bool currentDirectionSet = false;
-
-    public void ExecuteCommands(string args)
+    /// <inheritdoc />    
+    public void ExecuteCommands()
     {
-        string[] argsArray = args.ToLower().Split(',', StringSplitOptions.TrimEntries);
-
-        if (argsArray.Length > 0 && argsArray[0].StartsWith("place"))
+        var isLive = true;
+        while (isLive)
         {
-            foreach (string arg in argsArray)
-            {
+            Console.WriteLine("Please enter a command to continue\n");
 
-                if (arg.StartsWith("place"))
+            string[] argsArray = cliParser.ParseArgs();
+
+            if (argsArray.Length > 0)
+            {
+                foreach (string arg in argsArray)
                 {
-                    Place(arg);
-                }
-                else
-                {
-                    switch (arg)
+
+                    if (arg.StartsWith("place"))
                     {
-                        case "move":
-                            Move();
-                            break;
-                        case "left":
-                            Left();
-                            break;
-                        case "right":
-                            Right();
-                            break;
-                        case "report":
-                            Report();
-                            break;
-                        default:
-                            //do nothing
-                            break;
+                        Place(arg);
                     }
-
+                    else if (arg == "end")
+                    {
+                        isLive = false;
+                    }
+                    else if (isPosXSet && isPosYSet)
+                    {
+                        switch (arg)
+                        {
+                            case "move":
+                                Move();
+                                break;
+                            case "left":
+                                Left();
+                                break;
+                            case "right":
+                                Right();
+                                break;
+                            case "report":
+                                Report();
+                                break;
+                            default:
+                                //do nothing
+                                break;
+                        }
+                    }
                 }
             }
-
         }
-
     }
 
-    private void setPos(int value, bool isPosX)
+    /// <summary>
+    /// Sets the <c>x</c> or <c>y</c> coordinate as long as it is within the table boundaries.
+    /// </summary>
+    /// <param name="value">The value to set the coordinate to</param>
+    /// <param name="isPosX">Whether the coodinate is for the <c>x</c> axis or not</param>
+    private void SetPos(int value, bool isPosX)
     {
-        if (0 <= value && value <= 5)
+        if (isPosX && Table.xBoundaryMin <= value && value <= Table.xBoundaryMax)
         {
-            if (isPosX)
+            posX = value;
+            if (!isPosXSet)
             {
-                posX = value;
-                if (!posXSet)
-                {
-                    posXSet = true;
-                }
+                isPosXSet = true;
             }
-            else
+        }
+        else if (!isPosX && Table.yBoundaryMin <= value && value <= Table.yBoundaryMax)
+        {
+            posY = value;
+            if (!isPosYSet)
             {
-                posY = value;
-                if (!posYSet)
-                {
-                    posYSet = true;
-                }
+                isPosYSet = true;
             }
         }
     }
 
+    /// <summary>
+    /// Places the <c>RoBoFriend</c> at the coordinates on the table facing the specified <c>direction</c>.
+    /// </summary>
+    /// <param name="arg">String containing the command details in the syntaxx of <c>PLACE X Y DIRECTION</c></param>
     private void Place(string arg)
     {
         string[] args = arg.Split(' ');
 
         int argPosX;
         int argPosY;
-        direction argDirection;
+        Direction argDirection;
 
         if (args.Length == 4 && args[0] == "place" &&
             int.TryParse(args[1], out argPosX) &&
             int.TryParse(args[2], out argPosY) &&
-            Enum.TryParse(args[3], out argDirection))
+            Enum.TryParse(args[3], true, out argDirection))
         {
-            setPos(argPosX, true);
-            setPos(argPosY, false);
+            SetPos(argPosX, true);
+            SetPos(argPosY, false);
             currentDirection = (int)argDirection;
-            currentDirectionSet = true;
         }
     }
 
+    /// <summary>
+    /// Moves the <c>RoBoFriend</c> along the table coordinates an amount equal to its <c>speed</c>
+    /// </summary>
     private void Move()
     {
         switch (currentDirection)
         {
-            case (int)direction.north:
-                setPos(posY + 1, false);
+            case (int)Direction.North:
+                SetPos(posY + speed, false);
                 break;
-            case (int)direction.east:
-                setPos(posX + 1, true);
+            case (int)Direction.East:
+                SetPos(posX + speed, true);
                 break;
-            case (int)direction.south:
-                setPos(posY - 1, false);
+            case (int)Direction.South:
+                SetPos(posY - speed, false);
                 break;
-            case (int)direction.west:
-                setPos(posX - 1, true);
+            case (int)Direction.West:
+                SetPos(posX - speed, true);
                 break;
             default:
                 //do nothing
@@ -123,30 +154,39 @@ class RoBoFriend
         }
     }
 
+    /// <summary>
+    /// Rotates the facing direction of the <c>RoBoFriend</c> by 90 degrees counter-clockwise.
+    /// </summary>
     private void Left()
     {
         currentDirection -= 1;
-        if (currentDirection < (int)direction.north)
+        if (currentDirection < (int)Direction.North)
         {
-            currentDirection = (int)direction.west;
+            currentDirection = (int)Direction.West;
         }
     }
 
+    /// <summary>
+    /// Rotates the facing direction of the <c>RoBoFriend</c> by 90 degrees clockwise.
+    /// </summary>
     private void Right()
     {
         currentDirection += 1;
-        if (currentDirection > (int)direction.west)
+        if (currentDirection > (int)Direction.West)
         {
-            currentDirection = (int)direction.north;
+            currentDirection = (int)Direction.North;
         }
     }
 
+    /// <summary>
+    /// Requests a report of the current <c>x</c> coordinate, <c>y</c> coordinate, and
+    /// the <c>Direction</c> the <c>RoBoFriend</c> is facing.
+    /// </summary>
     private void Report()
     {
-        if (posXSet && posYSet && currentDirectionSet)
+        if (isPosXSet && isPosYSet)
         {
-            string currentDirectionString = ((direction)currentDirection).ToString().ToUpper();
-            Console.WriteLine($"{posX}, {posY}, {currentDirectionString}");
+            reportGenerator.GenerateReport(this.posX, this.posY, (Direction)currentDirection);
         }
     }
 }
